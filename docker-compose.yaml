@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+
+  nats:
+    image: nats:latest
+    ports:
+      - "8222:8222"  
+
+    
+  client-gateway:
+    build: ./client-gateway
+    ports:
+      - "${CLIENT_GATEWAY_PORT}:3000"
+    volumes:
+      - ./client-gateway/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVER=nats://nats:4222
+
+  products-ms:
+    build: ./products-ms
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./products-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3001
+      - NATS_SERVER=nats://nats:4222
+      - DATABASE_URL=file:./dev.db
+
+  orders-ms:
+    build: ./orders-ms
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./orders-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3002
+      - NATS_SERVER=nats://nats:4222
+      - DATABASE_URL=postgresql://postgres:123456@orders-ms-db:5432/orders_db?schema=public
+    depends_on:
+      - orders-ms-db
+
+  orders-ms-db:    
+    container_name: orders_database
+    image: postgres:15.3
+    restart: always
+    volumes:
+      - ./orders-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: orders_db
+  
