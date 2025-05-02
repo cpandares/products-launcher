@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+
+  nats:
+    image: nats:latest
+    ports:
+      - "8222:8222"  
+      - "4222:4222"
+
+    
+  client-gateway:
+    build: 
+      context: ./client-gateway
+      dockerfile: dockerfile.prod
+    image: client-gateway
+    # ports:
+    #   - "${CLIENT_GATEWAY_PORT}:3000"
+    # volumes:
+    #   - ./client-gateway/src:/usr/src/app/src
+    
+    
+
+  products-ms:
+    build: 
+      context: ./products-ms
+      dockerfile: dockerfile.prod
+    image: products-ms
+    environment:
+      - PORT=3001
+      - NATS_SERVER=nats://nats:4222
+      - DATABASE_URL=file:./dev.db
+
+  orders-ms:
+    build: 
+      context: ./orders-ms
+      dockerfile: dockerfile.prod
+      args:
+        - ORDERS_DB=${ORDERS_DB}
+    image: orders-ms
+    environment:
+      - PORT=3002
+      - NATS_SERVER=nats://nats:4222
+      - DATABASE_URL=${ORDERS_DB}
+    
+
+  
+
+  payments-ms:
+    
+    build: 
+      context: ./payments-ms
+      dockerfile: dockerfile.prod
+    image: payments-ms    
+    
+    environment:      
+      - NATS_SERVER=nats://nats:4222
+      - PORT=${PAYMENTS_PORT}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - URL_SUCCESS=${URL_SUCCESS}
+      - URL_CANCELLED=${URL_CANCELLED}
+      - END_POINT_SECRET=${END_POINT_SECRET}
+
+
+  auth-ms:
+    build:     
+      context: ./auth-ms
+      dockerfile: dockerfile.prod
+    image: auth-ms
+    
+    environment:
+      - PORT=3004
+      - NATS_SERVER=nats://nats:4222
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      
+    
+      
+    
+  

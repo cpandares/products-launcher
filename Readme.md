@@ -22,3 +22,11 @@ git submodule update --remote
 ```bash
 docker-compose up --build
 ```
+
+
+## PROD
+
+1. Ejecutar el siguiente comando para crear la imagen de producción
+```bash
+docker compose -f docker-compose.prod.yaml build
+```
