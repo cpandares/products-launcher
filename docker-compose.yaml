@@ -74,6 +74,22 @@ services:
       - URL_SUCCESS=${URL_SUCCESS}
       - URL_CANCELLED=${URL_CANCELLED}
       - END_POINT_SECRET=${END_POINT_SECRET}
+
+
+  auth-ms:
+    build: ./auth-ms
+    ports:
+      - "3004:3004"
+    volumes:
+      - ./auth-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3004
+      - NATS_SERVER=nats://nats:4222
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      
+    
       
     
   
